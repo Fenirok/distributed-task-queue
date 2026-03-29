@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Queue Demo</title>
+</head>
+<body>
+
+<h2>Distributed Task Queue Demo</h2>
+
+<button onclick="createTask()">Run Email Task</button>
+
+<h3>Status:</h3>
+<p id="status">Not started</p>
+
+<script>
+
+let taskId = null;
+
+async function createTask() {
+
+    document.getElementById("status").innerText = "Submitting...";
+
+    const response = await fetch("/tasks", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            taskType: "email_send",
+            payload: {
+                to: "test@gmail.com",
+                subject: "Hello",
+                body: "Test email"
+            }
+        })
+    });
+
+    const data = await response.json();
+    taskId = data.task_id;
+
+    pollStatus();
+}
+
+async function pollStatus() {
+
+    const interval = setInterval(async () => {
+
+        const res = await fetch(`/tasks/${taskId}`);
+        const task = await res.json();
+
+        document.getElementById("status").innerText = task.status;
+
+        if (task.status === "COMPLETED" || task.status === "FAILED") {
+            clearInterval(interval);
+        }
+
+    }, 1000);
+}
+
+</script>
+
+</body>
+</html>
