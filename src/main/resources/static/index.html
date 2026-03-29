@@ -1,24 +1,196 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Task Queue Demo</title>
+    <meta charset="UTF-8">
+    <title>Task Queue Dashboard</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f7fb;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        h1 {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 25px;
+            width: 420px;
+            margin: 20px auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            text-align: left;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        select, textarea {
+            width: 100%;
+            margin-top: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        textarea {
+            resize: none;
+        }
+
+        button {
+            margin-top: 15px;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: #4a90e2;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #357abd;
+        }
+
+        .status-text {
+            text-align: center;
+            font-size: 20px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+
+        .flow {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .step {
+            flex: 1;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 13px;
+            background: #eee;
+            color: #666;
+            transition: 0.3s;
+        }
+
+        .active {
+            font-weight: 600;
+            color: white;
+        }
+
+        .pending.active {
+            background: #ffc107;
+        }
+
+        .running.active {
+            background: #2196f3;
+        }
+
+        .completed.active {
+            background: #4caf50;
+        }
+
+        .failed.active {
+            background: #f44336;
+        }
+    </style>
 </head>
 <body>
 
-<h2>Distributed Task Queue Demo</h2>
+<div class="container">
 
-<button onclick="createTask()">Run Email Task</button>
+    <h1>⚡ Task Queue Dashboard</h1>
+    <p class="subtitle">Visualizing asynchronous task execution</p>
 
-<h3>Status:</h3>
-<p id="status">Not started</p>
+    <div class="card">
+
+        <label>Task Type</label>
+        <select id="taskType">
+            <option value="email_send">Email Task</option>
+            <option value="csv_process">CSV Processing</option>
+            <option value="report_generation">Report Generation</option>
+        </select>
+
+        <label style="margin-top:10px;">Payload (JSON)</label>
+        <textarea id="payload" rows="6">
+{
+  "to": "demo@gmail.com",
+  "subject": "Hello",
+  "body": "Test email"
+}
+        </textarea>
+
+        <button onclick="createTask()">Run Task</button>
+
+    </div>
+
+    
+    <div class="card">
+
+        <div class="status-text" id="status">Idle</div>
+
+        <div class="flow">
+            <div id="pending" class="step pending">Pending</div>
+            <div id="running" class="step running">Running</div>
+            <div id="completed" class="step completed">Completed</div>
+        </div>
+
+    </div>
+
+</div>
 
 <script>
 
 let taskId = null;
 
+function resetSteps() {
+    document.getElementById("pending").classList.remove("active");
+    document.getElementById("running").classList.remove("active");
+    document.getElementById("completed").classList.remove("active");
+}
+
 async function createTask() {
 
+    const type = document.getElementById("taskType").value;
+    const payloadText = document.getElementById("payload").value;
+
+    let payload;
+
+    try {
+        payload = JSON.parse(payloadText);
+    } catch (e) {
+        alert("Invalid JSON format!");
+        return;
+    }
+
     document.getElementById("status").innerText = "Submitting...";
+    resetSteps();
 
     const response = await fetch("/tasks", {
         method: "POST",
@@ -26,12 +198,8 @@ async function createTask() {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            taskType: "email_send",
-            payload: {
-                to: "test@gmail.com",
-                subject: "Hello",
-                body: "Test email"
-            }
+            taskType: type,
+            payload: payload
         })
     });
 
@@ -50,7 +218,26 @@ async function pollStatus() {
 
         document.getElementById("status").innerText = task.status;
 
-        if (task.status === "COMPLETED" || task.status === "FAILED") {
+        resetSteps();
+
+        if (task.status === "PENDING") {
+            document.getElementById("pending").classList.add("active");
+        }
+
+        if (task.status === "RUNNING") {
+            document.getElementById("pending").classList.add("active");
+            document.getElementById("running").classList.add("active");
+        }
+
+        if (task.status === "COMPLETED") {
+            document.getElementById("pending").classList.add("active");
+            document.getElementById("running").classList.add("active");
+            document.getElementById("completed").classList.add("active");
+            clearInterval(interval);
+        }
+
+        if (task.status === "FAILED") {
+            document.getElementById("status").innerText = "FAILED ❌";
             clearInterval(interval);
         }
 
