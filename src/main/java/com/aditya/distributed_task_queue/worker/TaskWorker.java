@@ -122,14 +122,19 @@ public class TaskWorker {
             factory.getHandler(task.getTaskType()).execute(task);
 
             task.setStatus(TaskStatus.COMPLETED);
-            task.setResult("Success");
+            task.setCompletedAt(LocalDateTime.now());
+
+            long duration = java.time.Duration
+                    .between(task.getStartedAt(), task.getCompletedAt())
+                    .toMillis();
+
+            task.setResult("Success (Execution Time: " + duration + " ms)");
 
         } catch (Exception e) {
             task.setStatus(TaskStatus.FAILED);
-            task.setError(e.getMessage());
+            task.setError("Error: " + e.getMessage());
         }
 
-        task.setCompletedAt(LocalDateTime.now());
         repo.save(task);
     }
 }

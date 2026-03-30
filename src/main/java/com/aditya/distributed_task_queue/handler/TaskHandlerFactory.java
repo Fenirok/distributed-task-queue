@@ -15,9 +15,11 @@ public class TaskHandlerFactory {
 
     public TaskHandler getHandler(String type) {
         TaskHandler handler = handlers.get(type);
+
         if (handler == null) {
-            throw new RuntimeException("No handler for type: " + type);
+            throw new RuntimeException("Invalid task type: " + type);
         }
+
         return handler;
     }
 }

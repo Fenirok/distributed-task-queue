@@ -56,6 +56,7 @@ import tools.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -86,5 +87,13 @@ public class TaskService {
     public Task getTask(UUID id) {
         return repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+    }
+
+    public List<Task> getTasksByStatus(TaskStatus status) {
+        return repo.findByStatus(status);
+    }
+
+    public List<Task> getAllTasks() {
+        return repo.findAll();
     }
 }
