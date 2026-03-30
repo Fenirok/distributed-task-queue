@@ -112,7 +112,7 @@ public class TaskWorker {
         }
     }
 
-    private void process(Task task) {
+    void process(Task task) {
 
         try {
             task.setStatus(TaskStatus.RUNNING);
