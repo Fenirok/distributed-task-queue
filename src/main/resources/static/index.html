@@ -1,389 +1,810 @@
 <!doctype html>
+
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <title>Task Queue Dashboard</title>
-
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Ethereal Engine - Distributed Task Queue</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap"
       rel="stylesheet"
     />
-
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary-container": "#000311",
+              "on-secondary": "#e6ffee",
+              surface: "#f7f9fb",
+              "error-container": "#fa746f",
+              "on-secondary-container": "#005e3f",
+              "on-secondary-fixed": "#004930",
+              "on-surface": "#2c3437",
+              "on-error": "#fff7f6",
+              "primary-fixed": "#4388fd",
+              "primary-dim": "#004fad",
+              "secondary-dim": "#005f40",
+              error: "#a83836",
+              tertiary: "#865400",
+              "on-tertiary-fixed-variant": "#563400",
+              primary: "#005bc4",
+              "inverse-on-surface": "#9a9d9f",
+              "surface-variant": "#dce4e8",
+              "on-surface-variant": "#596064",
+              "tertiary-fixed-dim": "#e79400",
+              background: "#f7f9fb",
+              "tertiary-dim": "#764900",
+              "on-tertiary-container": "#4a2c00",
+              "secondary-container": "#6ffbbe",
+              "outline-variant": "#acb3b7",
+              "tertiary-fixed": "#f8a010",
+              "error-dim": "#67040d",
+              "inverse-primary": "#4d8eff",
+              "secondary-fixed-dim": "#5fedb0",
+              secondary: "#006d4a",
+              "secondary-fixed": "#6ffbbe",
+              "surface-dim": "#d4dbdf",
+              "primary-fixed-dim": "#317bef",
+              "on-primary-fixed": "#000000",
+              "surface-container-high": "#e3e9ed",
+              "surface-container": "#eaeff2",
+              "surface-tint": "#005bc4",
+              "on-primary-fixed-variant": "#001435",
+              "inverse-surface": "#0b0f10",
+              "on-error-container": "#6e0a12",
+              "on-tertiary-fixed": "#2a1700",
+              "on-tertiary": "#fff7f3",
+              outline: "#747c80",
+              "on-primary": "#f9f8ff",
+              "surface-container-lowest": "#ffffff",
+              "surface-bright": "#f7f9fb",
+              "surface-container-low": "#f0f4f7",
+              "primary-container": "#4388fd",
+              "surface-container-highest": "#dce4e8",
+              "on-secondary-fixed-variant": "#006947",
+              "on-background": "#2c3437",
+              "tertiary-container": "#f8a010",
+            },
+            fontFamily: {
+              headline: ["Manrope"],
+              body: ["Inter"],
+              label: ["Inter"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "1rem",
+              xl: "1.5rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
     <style>
-      body {
-        font-family: "Poppins", sans-serif;
-        background: linear-gradient(135deg, #e3f2fd, #fce4ec);
-        margin: 0;
-        color: #333;
+      .material-symbols-outlined {
+        font-variation-settings:
+          "FILL" 0,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 24;
+      }
+      .step .icon-bg {
+        background-color: #dce4e8;
+        color: #596064;
       }
 
-      .container {
-        text-align: center;
-        margin-top: 40px;
+      #pending.active + span {
+        color: #f8a010;
       }
 
-      h1 {
-        margin-bottom: 5px;
-        color: #2c3e50;
+      #running.active + span {
+        color: #005bc4;
       }
 
-      .subtitle {
-        color: #555;
-        margin-bottom: 25px;
+      #completed.active + span {
+        color: #006d4a;
       }
 
-      .card {
-        background: #ffffff;
-        border-radius: 14px;
-        padding: 20px;
-        width: 440px;
-        margin: 15px auto;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-        text-align: left;
-        border-left: 6px solid #4a90e2;
+      .step.active.pending .icon-bg {
+        background-color: #f8a010;
+        color: #2a1700;
+        border-color: white;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
       }
-
-      select,
-      textarea {
-        width: 100%;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-        margin-top: 6px;
-      }
-
-      button {
-        margin-top: 12px;
-        width: 100%;
-        padding: 12px;
-        border: none;
-        border-radius: 10px;
-        background: linear-gradient(45deg, #4a90e2, #42a5f5);
+      .step.active.running .icon-bg {
+        background-color: #005bc4;
         color: white;
-        font-size: 15px;
-        cursor: pointer;
-        transition: 0.3s;
+        border-color: white;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        ring: 4px;
+        ring-color: rgba(0, 91, 196, 0.2);
       }
-
-      button:hover {
-        transform: scale(1.03);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      }
-
-      .status-text {
-        text-align: center;
-        font-size: 20px;
-        font-weight: 600;
-      }
-
-      .flow {
-        display: flex;
-        margin-top: 10px;
-      }
-
-      .step {
-        flex: 1;
-        margin: 5px;
-        padding: 10px;
-        border-radius: 10px;
-        background: #eee;
-        text-align: center;
-        font-size: 13px;
-        transition: 0.3s;
-      }
-
-      .pending.active {
-        background: #ffd54f;
-        color: #000;
-      }
-      .running.active {
-        background: #4fc3f7;
+      .step.active.completed .icon-bg {
+        background-color: #006d4a;
         color: white;
+        border-color: white;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
       }
-      .completed.active {
-        background: #66bb6a;
+      .step.active.failed .icon-bg {
+        background-color: #a83836;
         color: white;
-      }
-      .failed.active {
-        background: #ef5350;
-        color: white;
+        border-color: white;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
       }
 
-      .result-box {
-        margin-top: 10px;
-        font-size: 13px;
-        background: #f9f9f9;
-        padding: 10px;
-        border-radius: 8px;
+      .step.active.pending + span {
+        color: #865400;
       }
-
-      .table {
-        width: 100%;
-        font-size: 12px;
-        border-collapse: collapse;
+      .step.active.running + span {
+        color: #005bc4;
       }
-
-      .table th {
-        background: #4a90e2;
-        color: white;
+      .step.active.completed + span {
+        color: #006d4a;
       }
-
-      .table th,
-      .table td {
-        padding: 8px;
-      }
-
-      .table tr:nth-child(even) {
-        background: #f4f8ff;
-      }
-
-      .table tr:hover {
-        background: #e3f2fd;
+      .step.active.failed + span {
+        color: #a83836;
       }
     </style>
   </head>
-
-  <body>
-    <div class="container">
-      <h1>Task Queue Dashboard</h1>
-      <p class="subtitle">Real-time asynchronous processing visualization</p>
-
-      <!-- NEW: 3 TASK CARDS -->
-      <div
-        style="
-          display: flex;
-          gap: 20px;
-          justify-content: center;
-          flex-wrap: wrap;
-        "
+  <body class="bg-surface font-body text-on-surface antialiased">
+    <header
+      class="bg-[#f7f9fb] sticky top-0 z-50 flex justify-between items-center w-full px-8 py-4 max-w-full"
+    >
+      <div class="flex items-center gap-2">
+        <span
+          class="text-2xl font-bold bg-gradient-to-br from-[#005bc4] to-[#4388fd] bg-clip-text text-transparent font-headline tracking-tight"
+          >Ethereal Engine</span
+        >
+      </div>
+      <nav class="hidden md:flex items-center gap-8">
+        <a
+          class="text-[#005bc4] font-bold border-b-2 border-[#005bc4] pb-1 font-manrope tracking-tight headline-md transition-colors duration-200"
+          href="#"
+          >Dashboard</a
+        >
+        <a
+          class="text-slate-500 font-medium font-manrope tracking-tight headline-md hover:text-[#005bc4] transition-colors duration-200"
+          href="#"
+          >Workers</a
+        >
+        <a
+          class="text-slate-500 font-medium font-manrope tracking-tight headline-md hover:text-[#005bc4] transition-colors duration-200"
+          href="#"
+          >Queues</a
+        >
+        <a
+          class="text-slate-500 font-medium font-manrope tracking-tight headline-md hover:text-[#005bc4] transition-colors duration-200"
+          href="#"
+          >Logs</a
+        >
+      </nav>
+      <div class="flex items-center gap-4">
+        <span class="material-symbols-outlined text-outline"
+          >notifications</span
+        >
+        <span class="material-symbols-outlined text-outline">settings</span>
+        <div
+          class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden"
+        >
+          <img
+            alt="User profile"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBP10TlT-fO2Cr_pG3izXsajIX5CNB_CylH6IFqheW2Vjh8eZUfimAcmhIGWV7NMrcjwtSVdIPilfpZFfMWIbp96RGa6uw8DEqDy-EUKPwh9ffLMoulOs2sIrTGSBpujgQrlT5NwLgldOuwycLAQ40WooZxjkI6AEJe51x3cfWa5xwDvsKUK90GlEBS7fF_hMGXBF5H4FzL7WQVv1vHi5q8yuHRE3AMdSKOBDtesb5h4eoe2X5jSY3vW16pco5I43fjFOmFlcjf0Vk"
+          />
+        </div>
+      </div>
+    </header>
+    <main class="max-w-6xl mx-auto px-6 py-12 space-y-12">
+      <section class="text-center space-y-4">
+        <h1
+          class="font-headline font-extrabold text-5xl tracking-tight text-on-surface"
+        >
+          ⚡ Distributed Task Queue Dashboard
+        </h1>
+        <p class="text-on-surface-variant text-xl font-medium tracking-wide">
+          Asynchronous Task Processing System
+        </p>
+      </section>
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Task Card 1 -->
+        <div
+          class="bg-surface-container-lowest p-8 rounded-xl shadow-[0_12px_32px_rgba(44,52,55,0.06)] flex flex-col space-y-6"
+        >
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">mail</span>
+            <h3 class="font-headline font-bold text-lg">Email Service</h3>
+          </div>
+          <div class="space-y-4 flex-grow">
+            <div>
+              <label
+                class="block text-xs font-bold tracking-widest text-on-surface-variant uppercase mb-2"
+                >Task Type</label
+              >
+              <select
+                class="w-full bg-surface-container-highest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary"
+                id="taskType1"
+              >
+                <option value="Email">Email</option>
+                <option value="CSV">CSV</option>
+                <option value="Report">Report</option>
+              </select>
+            </div>
+            <div>
+              <label
+                class="block text-xs font-bold tracking-widest text-on-surface-variant uppercase mb-2"
+                >Payload (JSON)</label
+              >
+              <textarea
+                class="w-full bg-surface-container-highest border-none rounded-lg p-3 text-sm h-32 focus:ring-2 focus:ring-primary font-mono"
+                id="payload1"
+              >
+{"to": "user@example.com"}</textarea
+              >
+            </div>
+          </div>
+          <div class="flex justify-between items-center py-2 px-1" id="status1">
+            <div
+              class="step w-8 h-8 rounded-full icon-bg border-4 border-surface flex items-center justify-center transition-all duration-300"
+              id="pending1"
+            >
+              <span class="material-symbols-outlined text-xs">timer</span>
+            </div>
+            <div class="flex-grow h-0.5 bg-surface-variant mx-1"></div>
+            <div
+              class="step w-8 h-8 rounded-full icon-bg border-4 border-surface flex items-center justify-center transition-all duration-300"
+              id="running1"
+            >
+              <span class="material-symbols-outlined text-xs">autorenew</span>
+            </div>
+            <div class="flex-grow h-0.5 bg-surface-variant mx-1"></div>
+            <div
+              class="step w-8 h-8 rounded-full icon-bg border-4 border-surface flex items-center justify-center transition-all duration-300"
+              id="completed1"
+            >
+              <span class="material-symbols-outlined text-xs"
+                >check_circle</span
+              >
+            </div>
+          </div>
+          <button
+            class="w-full py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold rounded-full transition-all active:scale-95 flex items-center justify-center gap-2"
+            onclick="createTask(1)"
+          >
+            <span>🚀 Run Task</span>
+          </button>
+        </div>
+        <!-- Task Card 2 -->
+        <div
+          class="bg-surface-container-lowest p-8 rounded-xl shadow-[0_12px_32px_rgba(44,52,55,0.06)] flex flex-col space-y-6"
+        >
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">database</span>
+            <h3 class="font-headline font-bold text-lg">CSV Processor</h3>
+          </div>
+          <div class="space-y-4 flex-grow">
+            <div>
+              <label
+                class="block text-xs font-bold tracking-widest text-on-surface-variant uppercase mb-2"
+                >Task Type</label
+              >
+              <select
+                class="w-full bg-surface-container-highest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary"
+                id="taskType2"
+              >
+                <option value="CSV">CSV</option>
+                <option value="Email">Email</option>
+                <option value="Report">Report</option>
+              </select>
+            </div>
+            <div>
+              <label
+                class="block text-xs font-bold tracking-widest text-on-surface-variant uppercase mb-2"
+                >Payload (JSON)</label
+              >
+              <textarea
+                class="w-full bg-surface-container-highest border-none rounded-lg p-3 text-sm h-32 focus:ring-2 focus:ring-primary font-mono"
+                id="payload2"
+              >
+{"file_id": "9921-X"}</textarea
+              >
+            </div>
+          </div>
+          <div class="flex justify-between items-center py-2 px-1" id="status2">
+            <div
+              class="step w-8 h-8 rounded-full icon-bg border-4 border-surface flex items-center justify-center transition-all duration-300"
+              id="pending2"
+            >
+              <span class="material-symbols-outlined text-xs">timer</span>
+            </div>
+            <div class="flex-grow h-0.5 bg-surface-variant mx-1"></div>
+            <div
+              class="step w-8 h-8 rounded-full icon-bg border-4 border-surface flex items-center justify-center transition-all duration-300"
+              id="running2"
+            >
+              <span class="material-symbols-outlined text-xs">autorenew</span>
+            </div>
+            <div class="flex-grow h-0.5 bg-surface-variant mx-1"></div>
+            <div
+              class="step w-8 h-8 rounded-full icon-bg border-4 border-surface flex items-center justify-center transition-all duration-300"
+              id="completed2"
+            >
+              <span class="material-symbols-outlined text-xs"
+                >check_circle</span
+              >
+            </div>
+          </div>
+          <button
+            class="w-full py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold rounded-full transition-all active:scale-95 flex items-center justify-center gap-2"
+            onclick="createTask(2)"
+          >
+            <span>🚀 Run Task</span>
+          </button>
+        </div>
+        <!-- Task Card 3 -->
+        <div
+          class="bg-surface-container-lowest p-8 rounded-xl shadow-[0_12px_32px_rgba(44,52,55,0.06)] flex flex-col space-y-6"
+        >
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary"
+              >analytics</span
+            >
+            <h3 class="font-headline font-bold text-lg">Report Generator</h3>
+          </div>
+          <div class="space-y-4 flex-grow">
+            <div>
+              <label
+                class="block text-xs font-bold tracking-widest text-on-surface-variant uppercase mb-2"
+                >Task Type</label
+              >
+              <select
+                class="w-full bg-surface-container-highest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary"
+                id="taskType3"
+              >
+                <option value="Report">Report</option>
+                <option value="Email">Email</option>
+                <option value="CSV">CSV</option>
+              </select>
+            </div>
+            <div>
+              <label
+                class="block text-xs font-bold tracking-widest text-on-surface-variant uppercase mb-2"
+                >Payload (JSON)</label
+              >
+              <textarea
+                class="w-full bg-surface-container-highest border-none rounded-lg p-3 text-sm h-32 focus:ring-2 focus:ring-primary font-mono"
+                id="payload3"
+              >
+{"format": "pdf", "range": "Q3"}</textarea
+              >
+            </div>
+          </div>
+          <div class="flex justify-between items-center py-2 px-1" id="status3">
+            <div
+              class="step w-8 h-8 rounded-full icon-bg border-4 border-surface flex items-center justify-center transition-all duration-300"
+              id="pending3"
+            >
+              <span class="material-symbols-outlined text-xs">timer</span>
+            </div>
+            <div class="flex-grow h-0.5 bg-surface-variant mx-1"></div>
+            <div
+              class="step w-8 h-8 rounded-full icon-bg border-4 border-surface flex items-center justify-center transition-all duration-300"
+              id="running3"
+            >
+              <span class="material-symbols-outlined text-xs">autorenew</span>
+            </div>
+            <div class="flex-grow h-0.5 bg-surface-variant mx-1"></div>
+            <div
+              class="step w-8 h-8 rounded-full icon-bg border-4 border-surface flex items-center justify-center transition-all duration-300"
+              id="completed3"
+            >
+              <span class="material-symbols-outlined text-xs"
+                >check_circle</span
+              >
+            </div>
+          </div>
+          <button
+            class="w-full py-4 bg-gradient-to-br from-primary to-primary-container text-on-primary font-bold rounded-full transition-all active:scale-95 flex items-center justify-center gap-2"
+            onclick="createTask(3)"
+          >
+            <span>🚀 Run Task</span>
+          </button>
+        </div>
+      </section>
+      <!-- Global Status & Details -->
+      <section class="grid grid-cols-1 lg:grid-cols-5 gap-6" id="status">
+        <!-- Active Task Lifecycle -->
+        <div
+          class="lg:col-span-3 bg-surface-container-low p-8 rounded-xl flex flex-col justify-between"
+        >
+          <div>
+            <h2 class="font-headline font-bold text-2xl mb-2">
+              Active Task Lifecycle
+            </h2>
+            <p class="text-on-surface-variant text-sm mb-8">
+              Real-time execution flow for task
+              <code
+                class="bg-surface-container-highest px-2 py-0.5 rounded"
+                id="taskIdLabel"
+                >#PENDING</code
+              >
+            </p>
+          </div>
+          <div class="relative py-12">
+            <div class="relative flex justify-between items-center">
+              <!-- Pending -->
+              <div class="flex flex-col items-center gap-3">
+                <div
+                  class="step w-12 h-12 rounded-full icon-bg flex items-center justify-center z-10 border-4 border-surface transition-all duration-500"
+                  id="pending"
+                >
+                  <span class="material-symbols-outlined text-xl">timer</span>
+                </div>
+                <span class="font-bold text-sm text-on-surface-variant"
+                  >Pending</span
+                >
+              </div>
+              <!-- Running -->
+              <div class="flex flex-col items-center gap-3">
+                <div
+                  class="step w-12 h-12 rounded-full icon-bg flex items-center justify-center z-10 border-4 border-surface transition-all duration-500"
+                  id="running"
+                >
+                  <span class="material-symbols-outlined text-xl"
+                    >autorenew</span
+                  >
+                </div>
+                <span class="font-bold text-sm text-on-surface-variant"
+                  >Running</span
+                >
+              </div>
+              <!-- Completed -->
+              <div class="flex flex-col items-center gap-3">
+                <div
+                  class="step w-12 h-12 rounded-full icon-bg flex items-center justify-center z-10 border-4 border-surface transition-all duration-500"
+                  id="completed"
+                >
+                  <span class="material-symbols-outlined text-xl"
+                    >check_circle</span
+                  >
+                </div>
+                <span class="font-bold text-sm text-on-surface-variant"
+                  >Completed</span
+                >
+              </div>
+            </div>
+          </div>
+          <div
+            class="mt-8 bg-surface-container-lowest p-4 rounded-lg flex items-center gap-4"
+          >
+            <div
+              class="w-2 h-2 rounded-full bg-primary-fixed animate-pulse"
+            ></div>
+            <span class="text-sm font-medium"
+              >Worker <span class="font-bold text-primary">node-04</span> is
+              ready for next job...</span
+            >
+          </div>
+        </div>
+        <!-- Execution Context -->
+        <div
+          class="lg:col-span-2 bg-surface-container-lowest p-8 rounded-xl shadow-[0_12px_32px_rgba(44,52,55,0.06)] space-y-8"
+        >
+          <h3 class="font-headline font-bold text-xl">Execution Context</h3>
+          <div class="space-y-6">
+            <div>
+              <label
+                class="block text-[10px] font-bold tracking-[0.1em] text-on-surface-variant uppercase mb-1"
+                >Task ID</label
+              >
+              <p
+                class="font-mono text-sm text-on-surface bg-surface-container-low p-2 rounded-lg"
+                id="taskId"
+              >
+                ---
+              </p>
+            </div>
+            <div>
+              <label
+                class="block text-[10px] font-bold tracking-[0.1em] text-on-surface-variant uppercase mb-1"
+                >Result</label
+              >
+              <div
+                class="bg-surface-container-low p-3 rounded-lg border-l-4 border-outline-variant"
+                id="result"
+              >
+                <p class="text-sm text-on-surface-variant italic">
+                  Waiting for execution...
+                </p>
+              </div>
+            </div>
+            <div>
+              <label
+                class="block text-[10px] font-bold tracking-[0.1em] text-on-surface-variant uppercase mb-1"
+                >Error</label
+              >
+              <div
+                class="bg-surface-container-low p-3 rounded-lg border-l-4 border-outline-variant"
+                id="error"
+              >
+                <p class="text-sm text-on-surface-variant italic">
+                  No exceptions recorded.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div
+            class="pt-4 border-t border-surface-variant flex justify-between items-center"
+          >
+            <span class="text-xs text-on-surface-variant" id="startTimeLabel"
+              >Ready</span
+            >
+            <button
+              class="text-primary text-sm font-bold flex items-center gap-1 hover:underline"
+            >
+              View Logs
+              <span class="material-symbols-outlined text-sm">open_in_new</span>
+            </button>
+          </div>
+        </div>
+      </section>
+      <!-- Job Registry -->
+      <section
+        class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0_12px_32px_rgba(44,52,55,0.06)]"
       >
-        <!-- CARD 1 -->
-        <div class="card">
-          <label>Task Type</label>
-          <select id="taskType1">
-            <option value="email_send">Email</option>
-            <option value="csv_process">CSV</option>
-            <option value="report_generation">Report</option>
-          </select>
-
-          <label>Payload</label>
-          <textarea id="payload1" rows="5">
-{
-  "to": "demo@gmail.com",
-  "subject": "Hello",
-  "body": "Test email"
-}
-          </textarea>
-
-          <button onclick="createTask(1)">Run Task</button>
-
-          <div class="status-text" id="status1">Idle</div>
-
-          <div class="flow">
-            <div id="pending1" class="step">Pending</div>
-            <div id="running1" class="step">Running</div>
-            <div id="completed1" class="step">Completed</div>
-          </div>
-        </div>
-
-        <!-- CARD 2 -->
-        <div class="card">
-          <label>Task Type</label>
-          <select id="taskType2">
-            <option value="email_send">Email</option>
-            <option value="csv_process">CSV</option>
-            <option value="report_generation">Report</option>
-          </select>
-
-          <textarea id="payload2" rows="5">
-{
-  "fileName": "data.csv",
-  "rows": 100
-}
-          </textarea>
-
-          <button onclick="createTask(2)">Run Task</button>
-
-          <div class="status-text" id="status2">Idle</div>
-
-          <div class="flow">
-            <div id="pending2" class="step">Pending</div>
-            <div id="running2" class="step">Running</div>
-            <div id="completed2" class="step">Completed</div>
-          </div>
-        </div>
-
-        <!-- CARD 3 -->
-        <div class="card">
-          <label>Task Type</label>
-          <select id="taskType3">
-            <option value="email_send">Email</option>
-            <option value="csv_process">CSV</option>
-            <option value="report_generation">Report</option>
-          </select>
-
-          <textarea id="payload3" rows="5">
-{
-  "reportType": "sales",
-  "date": "2026-03-29"
-}
-          </textarea>
-
-          <button onclick="createTask(3)">Run Task</button>
-
-          <div class="status-text" id="status3">Idle</div>
-
-          <div class="flow">
-            <div id="pending3" class="step">Pending</div>
-            <div id="running3" class="step">Running</div>
-            <div id="completed3" class="step">Completed</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- EXISTING STATUS CARD (UNCHANGED) -->
-      <div class="card" style="border-left-color: #66bb6a">
-        <div class="status-text" id="status">Idle</div>
-
-        <div class="flow">
-          <div id="pending" class="step">Pending</div>
-          <div id="running" class="step">Running</div>
-          <div id="completed" class="step">Completed</div>
-        </div>
-
-        <div class="result-box">
-          <div><b>Task ID:</b> <span id="taskId">-</span></div>
+        <div
+          class="p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+        >
           <div>
-            <b>Result:</b>
-            <span id="result" style="color: green; font-weight: 600">-</span>
+            <h2 class="font-headline font-bold text-2xl">Job Registry</h2>
+            <p class="text-on-surface-variant text-sm">
+              Monitoring system-wide task throughput
+            </p>
           </div>
-          <div>
-            <b>Error:</b>
-            <span id="error" style="color: red; font-weight: 600">-</span>
+          <div class="flex items-center gap-3 w-full md:w-auto">
+            <div class="relative flex-grow md:flex-grow-0">
+              <span
+                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg"
+                >filter_list</span
+              >
+              <select
+                class="pl-10 pr-8 py-2.5 bg-surface-container-low border-none rounded-lg text-sm font-semibold focus:ring-2 focus:ring-primary appearance-none w-full"
+                id="filterStatus"
+                onchange="loadTasks()"
+              >
+                <option value="All" selected>All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Running">Running</option>
+                <option value="Completed">Completed</option>
+                <option value="Failed">Failed</option>
+              </select>
+            </div>
+            <button
+              class="p-2.5 bg-surface-container-low text-on-surface rounded-lg hover:bg-surface-container-high transition-colors"
+              onclick="loadTasks()"
+            >
+              <span class="material-symbols-outlined">refresh</span>
+            </button>
           </div>
         </div>
-      </div>
-
-      <!-- EXISTING TABLE (UNCHANGED) -->
-      <div class="card" style="border-left-color: #ab47bc">
-        <label>Filter Tasks</label>
-        <select id="filterStatus" onchange="loadTasks()">
-          <option value="">All</option>
-          <option value="PENDING">Pending</option>
-          <option value="RUNNING">Running</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="FAILED">Failed</option>
-        </select>
-
-        <table class="table" id="taskTable">
-          <tr>
-            <th>ID</th>
-            <th>Type</th>
-            <th>Status</th>
-          </tr>
-        </table>
-      </div>
-    </div>
-
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse" id="taskTable">
+            <thead>
+              <tr
+                class="bg-surface-container-low text-on-surface-variant text-xs font-bold tracking-[0.1em] uppercase"
+              >
+                <th class="px-8 py-4">Task ID</th>
+                <th class="px-8 py-4">Task Type</th>
+                <th class="px-8 py-4">Status</th>
+                <th class="px-8 py-4">Time</th>
+                <th class="px-8 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-container">
+              <!-- Tasks will be populated here -->
+            </tbody>
+          </table>
+        </div>
+        <div
+          class="p-8 border-t border-surface-container flex justify-between items-center"
+        >
+          <span
+            class="text-sm text-on-surface-variant font-medium"
+            id="taskCount"
+            >Showing 0 tasks</span
+          >
+          <div class="flex gap-2">
+            <button
+              class="px-4 py-2 bg-surface-container-low rounded-lg text-sm font-bold opacity-50 cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              class="px-4 py-2 bg-surface-container-low rounded-lg text-sm font-bold hover:bg-surface-container-highest"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer
+      class="max-w-6xl mx-auto px-6 py-12 border-t border-surface-variant/50 text-center"
+    >
+      <p class="text-on-surface-variant text-sm font-medium">
+        Ethereal Engine v2.4.0 • Infrastructure as a Gallery
+      </p>
+    </footer>
     <script>
-      const taskMap = {};
+      async function createTask(cardId) {
+        console.log("RUN TASK CLICKED");
 
-      function resetSteps(card) {
-        ["pending", "running", "completed"].forEach((s) => {
-          document.getElementById(s + card).className = "step";
-        });
-      }
+        const payloadText = document.getElementById(`payload${cardId}`).value;
 
-      function setStep(card, status) {
-        resetSteps(card);
+        let payload;
 
-        if (status === "PENDING") {
-          document
-            .getElementById("pending" + card)
-            .classList.add("active", "pending");
+        try {
+          payload = JSON.parse(payloadText);
+        } catch (e) {
+          console.warn("Invalid JSON, forcing empty payload");
+          payload = {}; // still send request
         }
-        if (status === "RUNNING") {
-          document
-            .getElementById("pending" + card)
-            .classList.add("active", "pending");
-          document
-            .getElementById("running" + card)
-            .classList.add("active", "running");
-        }
-        if (status === "COMPLETED") {
-          document
-            .getElementById("pending" + card)
-            .classList.add("active", "pending");
-          document
-            .getElementById("running" + card)
-            .classList.add("active", "running");
-          document
-            .getElementById("completed" + card)
-            .classList.add("active", "completed");
-        }
-        if (status === "FAILED") {
-          document
-            .getElementById("completed" + card)
-            .classList.add("active", "failed");
-        }
-      }
 
-      async function createTask(card) {
-        const type = document.getElementById("taskType" + card).value;
-        const payload = JSON.parse(
-          document.getElementById("payload" + card).value,
-        );
+        const typeMap = {
+          Email: "email_send",
+          CSV: "csv_process",
+          Report: "report_generation",
+        };
 
-        document.getElementById("status" + card).innerText = "Submitting...";
-        resetSteps(card);
+        const typeUI = document.getElementById(`taskType${cardId}`).value;
+        const taskType = typeMap[typeUI];
 
-        const res = await fetch("/tasks", {
+        const res = await fetch("http://localhost:8080/tasks", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ taskType: type, payload: payload }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            taskType,
+            payload,
+          }),
         });
 
         const data = await res.json();
-        taskMap[card] = data.task_id;
-
-        pollStatus(card);
+        console.log("Task created:", data);
       }
+      /*
+      async function createTask(cardId) {
+        const typeMap = {
+          Email: "email_send",
+          CSV: "csv_process",
+          Report: "report_generation",
+        };
 
-      function pollStatus(card) {
+        const typeUI = document.getElementById(`taskType${cardId}`).value;
+        const payloadText = document.getElementById(`payload${cardId}`).value;
+
+        let payload;
+        try {
+          payload = JSON.parse(payloadText);
+        } catch (e) {
+          alert("Invalid JSON payload");
+          return;
+        }
+
+        const res = await fetch("http://localhost:8080/tasks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            taskType: typeMap[typeUI],
+            payload: payload,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          console.error(data.error);
+          return;
+        }
+      }
+      */
+      /*
+      async function createTask(cardId) {
+        const typeMap = {
+          Email: "email_send",
+          CSV: "csv_process",
+          Report: "report_generation",
+        };
+
+        const typeUI = document.getElementById(`taskType${cardId}`).value;
+        const payloadText = document.getElementById(`payload${cardId}`).value;
+
+        let payload;
+        try {
+          payload = JSON.parse(payloadText);
+        } catch (e) {
+          alert("Invalid JSON payload");
+          return;
+        }
+
+        const taskType = typeMap[typeUI];
+
+        // 🔥 CALL BACKEND
+        const res = await fetch("http://localhost:8080/tasks", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            taskType,
+            payload,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.error || "Task creation failed");
+          return;
+        }
+
+        const taskId = data.task_id;
+
+        // Update UI lifecycle
+        updateGlobalLifecycle("PENDING", taskId);
+
+        // start polling
+        pollTask(taskId);
+      }
+      */
+
+      /*
+      function createTask(cardId) {
+        const type = document.getElementById(`taskType${cardId}`).value;
+        const payload = document.getElementById(`payload${cardId}`).value;
+        const id = Math.random().toString(16).slice(2, 10);
+        const task = { id, type, payload, status: "Pending", time: "Just now" };
+        tasks.unshift(task);
+
+        // Update Card Local Status
+        updateStep(`pending${cardId}`, true, "pending");
+        updateStep(`running${cardId}`, false, "running");
+        updateStep(`completed${cardId}`, false, "completed");
+
+        // Update Global Status
+        updateGlobalStatus(task);
+        loadTasks();
+
+        setTimeout(() => {
+          task.status = "Running";
+          updateStep(`pending${cardId}`, true, "pending");
+          updateStep(`running${cardId}`, true, "running");
+          updateGlobalStatus(task);
+          loadTasks();
+
+          setTimeout(() => {
+            task.status = "Completed";
+            updateStep(`pending${cardId}`, true, "pending");
+            updateStep(`running${cardId}`, true, "running");
+            updateStep(`completed${cardId}`, true, "completed");
+            updateGlobalStatus(task);
+            loadTasks();
+          }, 2000);
+        }, 1500);
+      }
+        */
+      async function pollTask(taskId) {
         const interval = setInterval(async () => {
-          const res = await fetch(`/tasks/${taskMap[card]}`);
+          const res = await fetch(`http://localhost:8080/tasks/${taskId}`);
           const task = await res.json();
 
-          
-          document.getElementById("status" + card).innerText = task.status;
-          setStep(card, task.status);
-
-         
-          document.getElementById("status").innerText = task.status;
-          document.getElementById("taskId").innerText = task.id;
-          //document.getElementById("result").innerText = task.result || "-";
-          //document.getElementById("error").innerText = task.error || "-";
-
-          const resultEl = document.getElementById("result");
-          const errorEl = document.getElementById("error");
-
-          if (task.status === "COMPLETED") {
-            resultEl.innerText = task.result || "Success";
-            resultEl.style.color = "green";
-            errorEl.innerText = "-";
-          }
-
-          if (task.status === "FAILED") {
-            errorEl.innerText = task.error || "Error occurred";
-            errorEl.style.color = "red";
-            resultEl.innerText = "-";
-          }
-
-        
-          setGlobalStep(task.status);
-
-          
-          loadTasks();
+          updateGlobalLifecycle(task.status, taskId);
 
           if (task.status === "COMPLETED" || task.status === "FAILED") {
             clearInterval(interval);
@@ -391,57 +812,428 @@
         }, 1000);
       }
 
-      function setGlobalStep(status) {
-        ["pending", "running", "completed"].forEach((id) => {
-          document.getElementById(id).className = "step";
-        });
-
-        if (status === "PENDING") {
-          document.getElementById("pending").classList.add("active", "pending");
-        }
-
-        if (status === "RUNNING") {
-          document.getElementById("pending").classList.add("active", "pending");
-          document.getElementById("running").classList.add("active", "running");
-        }
-
-        if (status === "COMPLETED") {
-          document.getElementById("pending").classList.add("active", "pending");
-          document.getElementById("running").classList.add("active", "running");
-          document
-            .getElementById("completed")
-            .classList.add("active", "completed");
-        }
-
-        if (status === "FAILED") {
-          document
-            .getElementById("completed")
-            .classList.add("active", "failed");
+      function updateStep(elementId, active, state) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        if (active) {
+          el.classList.add("active", state);
+        } else {
+          el.classList.remove(
+            "active",
+            "pending",
+            "running",
+            "completed",
+            "failed",
+          );
         }
       }
 
+      function updateGlobalLifecycle(status, taskId) {
+        document.getElementById("taskId").innerText = taskId;
+        document.getElementById("taskIdLabel").innerText = `#${taskId}`;
+
+        resetSteps();
+
+        if (status === "PENDING") {
+          activate("pending", "pending");
+        }
+
+        if (status === "RUNNING") {
+          activate("pending", "pending");
+          activate("running", "running");
+        }
+
+        if (status === "COMPLETED") {
+          activate("pending", "pending");
+          activate("running", "running");
+          activate("completed", "completed");
+        }
+
+        if (status === "FAILED") {
+          activate("pending", "pending");
+          activate("running", "running");
+          activate("completed", "failed");
+        }
+      }
+
+      function resetSteps() {
+        ["pending", "running", "completed"].forEach((id) => {
+          const el = document.getElementById(id);
+          el.classList.remove(
+            "active",
+            "pending",
+            "running",
+            "completed",
+            "failed",
+          );
+        });
+      }
+
+      function activate(id, state) {
+        const el = document.getElementById(id);
+        el.classList.add("active", state);
+      }
+
+      /*
+      function updateGlobalStatus(task) {
+        document.getElementById("taskId").innerText = task.id;
+        document.getElementById("taskIdLabel").innerText = `#${task.id}`;
+
+        updateStep(
+          "pending",
+          task.status === "Pending" ||
+            task.status === "Running" ||
+            task.status === "Completed",
+          "pending",
+        );
+        updateStep(
+          "running",
+          task.status === "Running" || task.status === "Completed",
+          "running",
+        );
+        updateStep("completed", task.status === "Completed", "completed");
+
+        const resultEl = document.getElementById("result");
+        const errorEl = document.getElementById("error");
+
+        if (task.status === "Completed") {
+          resultEl.innerHTML = `<p class="text-sm font-medium text-secondary">Success: ${task.type} processed successfully.</p>`;
+          resultEl.className =
+            "bg-surface-container-low p-3 rounded-lg border-l-4 border-secondary";
+          document.getElementById("startTimeLabel").innerText =
+            "Finished 1s ago";
+        } else if (task.status === "Running") {
+          resultEl.innerHTML = `<p class="text-sm text-on-surface-variant italic">Execution in progress...</p>`;
+          resultEl.className =
+            "bg-surface-container-low p-3 rounded-lg border-l-4 border-primary";
+          document.getElementById("startTimeLabel").innerText =
+            "Started 1s ago";
+        } else {
+          resultEl.innerHTML = `<p class="text-sm text-on-surface-variant italic">Waiting for execution...</p>`;
+          resultEl.className =
+            "bg-surface-container-low p-3 rounded-lg border-l-4 border-outline-variant";
+          document.getElementById("startTimeLabel").innerText = "In queue";
+        }
+      }
+      */
+
       async function loadTasks() {
-        let url = "/tasks";
-        const status = document.getElementById("filterStatus").value;
-        if (status) url += "?status=" + status;
+        const filter = document.getElementById("filterStatus").value;
+
+        let url = "http://localhost:8080/tasks";
+        if (filter !== "All") {
+          url += `?status=${filter.toUpperCase()}`;
+        }
 
         const res = await fetch(url);
         const tasks = await res.json();
 
-        let html = `<tr><th>ID</th><th>Type</th><th>Status</th></tr>`;
-
-        tasks.forEach((t) => {
-          html += `<tr>
-            <td>${t.id.substring(0, 8)}...</td>
-            <td>${t.taskType}</td>
-            <td>${t.status}</td>
-          </tr>`;
+        // ✅ SAFE SORT (newest on top)
+        tasks.sort((a, b) => {
+          const d1 = a.createdAt ? new Date(a.createdAt) : 0;
+          const d2 = b.createdAt ? new Date(b.createdAt) : 0;
+          return d2 - d1;
         });
+        if (tasks.length > 0) {
+          const latestTask = tasks[0]; // already sorted newest first
+          updateLifecycle(latestTask.status);
 
-        document.getElementById("taskTable").innerHTML = html;
+          document.getElementById("taskIdLabel").innerText =
+            `#${latestTask.id}`;
+        }
+
+        const tbody = document.querySelector("#taskTable tbody");
+        tbody.innerHTML = "";
+
+        document.getElementById("taskCount").innerText =
+          `Showing ${tasks.length} tasks`;
+
+        tasks.forEach((task) => {
+          const row = document.createElement("tr");
+
+          const iconMap = {
+            email_send: "mail",
+            csv_process: "database",
+            report_generation: "analytics",
+          };
+
+          row.innerHTML = `
+      <td class="px-8 py-5 font-mono text-sm">#${task.id}</td>
+
+      <td class="px-8 py-5">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-lg">
+            ${iconMap[task.taskType] || "task"}
+          </span>
+          <span class="font-semibold text-sm">${task.taskType}</span>
+        </div>
+      </td>
+
+      <td class="px-8 py-5">${getStatusBadge(task.status)}</td>
+
+      <td class="px-8 py-5 text-sm text-on-surface-variant">
+        ${formatTime(task.createdAt)}
+      </td>
+
+      <td class="px-8 py-5 text-right">
+        <span class="material-symbols-outlined text-outline">more_vert</span>
+      </td>
+    `;
+
+          tbody.appendChild(row);
+        });
       }
 
-      loadTasks();
+      /*
+      async function loadTasks() {
+        const filter = document.getElementById("filterStatus").value;
+
+        let url = "http://localhost:8080/tasks";
+        if (filter !== "All") {
+          url += `?status=${filter.toUpperCase()}`;
+        }
+
+        const res = await fetch(url);
+        const tasks = await res.json();
+        tasks.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt) : 0;
+          return dateB - dateA;
+        });
+
+        const tbody = document.querySelector("#taskTable tbody");
+        tbody.innerHTML = "";
+
+        document.getElementById("taskCount").innerText =
+          `Showing ${tasks.length} tasks`;
+
+        tasks.forEach((task) => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+  <td class="px-8 py-5 font-mono text-sm">#${task.id}</td>
+
+  <td class="px-8 py-5">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary text-lg">
+        ${iconMap[task.taskType] || "task"}
+      </span>
+      <span class="font-semibold text-sm">${task.taskType}</span>
+    </div>
+  </td>
+
+  <td class="px-8 py-5">${getStatusBadge(task.status)}</td>
+
+  <td class="px-8 py-5 text-sm text-on-surface-variant">
+    ${formatTime(task.createdAt)}
+  </td>
+
+  <td class="px-8 py-5 text-right">
+    <span class="material-symbols-outlined text-outline">more_vert</span>
+  </td>
+`;
+
+          tbody.appendChild(row);
+        });
+      }
+      */
+
+      function formatTime(dateString) {
+        if (!dateString) return "Just now";
+
+        const now = new Date();
+        const time = new Date(dateString);
+
+        if (isNaN(time)) return "Just now";
+
+        const diff = Math.floor((now - time) / 1000);
+
+        if (diff < 60) return "Just now";
+        if (diff < 3600) return Math.floor(diff / 60) + " mins ago";
+        if (diff < 86400) return Math.floor(diff / 3600) + " hrs ago";
+
+        return time.toLocaleString();
+      }
+
+      function getStatusBadge(status) {
+        if (status === "COMPLETED") {
+          return `
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-700 text-[11px] font-bold uppercase">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+        Completed
+      </span>`;
+        }
+
+        if (status === "RUNNING") {
+          return `
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold uppercase">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+        Running
+      </span>`;
+        }
+
+        if (status === "FAILED") {
+          return `
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-700 text-[11px] font-bold uppercase">
+        <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span>
+        Failed
+      </span>`;
+        }
+
+        return `
+    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-[11px] font-bold uppercase">
+      <span class="w-1.5 h-1.5 rounded-full bg-yellow-600"></span>
+      Pending
+    </span>`;
+      }
+
+      function updateLifecycle(status) {
+        const steps = ["pending", "running", "completed"];
+
+        // Reset all
+        steps.forEach((id) => {
+          const el = document.getElementById(id);
+          el.classList.remove(
+            "active",
+            "pending",
+            "running",
+            "completed",
+            "failed",
+          );
+        });
+
+        if (status === "PENDING") {
+          activateStep("pending", "pending");
+        }
+
+        if (status === "RUNNING") {
+          activateStep("pending", "completed"); // done
+          activateStep("running", "running");
+        }
+
+        if (status === "COMPLETED") {
+          activateStep("pending", "completed");
+          activateStep("running", "completed");
+          activateStep("completed", "completed");
+        }
+
+        if (status === "FAILED") {
+          activateStep("pending", "completed");
+          activateStep("running", "completed");
+          activateStep("completed", "failed");
+        }
+      }
+
+      function activateStep(id, state) {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.classList.add("active", state);
+      }
+
+      /*
+      function getStatusBadge(status) {
+        if (status === "COMPLETED") {
+          return `
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-100 text-green-700 text-[11px] font-bold uppercase">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+        Completed
+      </span>`;
+        }
+
+        if (status === "RUNNING") {
+          return `
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold uppercase">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span>
+        Running
+      </span>`;
+        }
+
+        if (status === "FAILED") {
+          return `
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-700 text-[11px] font-bold uppercase">
+        <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span>
+        Failed
+      </span>`;
+        }
+
+        return `
+    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-[11px] font-bold uppercase">
+      <span class="w-1.5 h-1.5 rounded-full bg-yellow-600"></span>
+      Pending
+    </span>`;
+      }
+      */
+
+      /*
+      function loadTasks() {
+        const filter = document.getElementById("filterStatus").value;
+        const tbody = document.querySelector("#taskTable tbody");
+        tbody.innerHTML = "";
+
+        const filteredTasks = tasks.filter(
+          (t) => filter === "All" || t.status === filter,
+        );
+        document.getElementById("taskCount").innerText =
+          `Showing ${filteredTasks.length} of ${tasks.length} tasks`;
+
+        filteredTasks.forEach((task) => {
+          const row = document.createElement("tr");
+          row.className =
+            "hover:bg-surface-container-low transition-colors group";
+
+          let statusBadge = "";
+          if (task.status === "Completed") {
+            statusBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[11px] font-bold uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-on-secondary-fixed"></span>Completed</span>`;
+          } else if (task.status === "Running") {
+            statusBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-fixed/20 text-primary text-[11px] font-bold uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>Running</span>`;
+          } else {
+            statusBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-tertiary-fixed/20 text-tertiary text-[11px] font-bold uppercase tracking-wider"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Pending</span>`;
+          }
+
+          const iconMap = {
+            Email: "mail",
+            CSV: "database",
+            Report: "analytics",
+          };
+
+          row.innerHTML = `
+                    <td class="px-8 py-5 font-mono text-sm">#${task.id}</td>
+                    <td class="px-8 py-5">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-lg">${iconMap[task.type] || "task"}</span>
+                            <span class="font-semibold text-sm">${task.type}</span>
+                        </div>
+                    </td>
+                    <td class="px-8 py-5">${statusBadge}</td>
+                    <td class="px-8 py-5 text-sm text-on-surface-variant">${task.time}</td>
+                    <td class="px-8 py-5 text-right">
+                        <button class="p-2 hover:bg-surface-container-highest rounded-lg transition-colors">
+                            <span class="material-symbols-outlined text-outline">more_vert</span>
+                        </button>
+                    </td>
+                `;
+          tbody.appendChild(row);
+        });
+      }
+        */
+
+      // Initialize with dummy data
+      /*
+      tasks = [
+        {
+          id: "8f2a991c",
+          type: "Report",
+          status: "Completed",
+          time: "2 mins ago",
+        },
+        { id: "4d1e220a", type: "Email", status: "Running", time: "Just now" },
+        { id: "c7b9114s", type: "CSV", status: "Failed", time: "15 mins ago" },
+        { id: "22a1xx90", type: "Email", status: "Pending", time: "1 hr ago" },
+      ];
+      */
+      //loadTasks();
+      setInterval(loadTasks, 1000);
     </script>
   </body>
 </html>

@@ -22,75 +22,30 @@ public class TaskController {
         this.service = service;
     }
 
-    /*
-     * @PostMapping
-     * public Map<String, Object> create(@RequestBody TaskRequest request) {
-     * 
-     * UUID id = service.createTask(
-     * request.getTaskType(),
-     * request.getPayload()
-     * );
-     * 
-     * return Map.of("task_id", id);
-     * }
-     */
-
     @PostMapping
     public ResponseEntity<?> create(@RequestBody TaskRequest request) {
 
-        // VALIDATE TASK TYPE
-        if (request.getTaskType() == null ||
-                (!request.getTaskType().equals("email_send") &&
-                        !request.getTaskType().equals("csv_process") &&
-                        !request.getTaskType().equals("report_generation"))) {
+        // ✅ ONLY minimal validation (DO NOT BLOCK EXECUTION)
 
+        if (request.getTaskType() == null || request.getTaskType().isBlank()) {
             return ResponseEntity
                     .badRequest()
-                    .body(Map.of("error", "Invalid task type"));
+                    .body(Map.of("error", "Task type required"));
         }
 
-        // VALIDATE PAYLOAD
-        if (request.getPayload() == null || request.getPayload().isEmpty()) {
+        if (request.getPayload() == null) {
             return ResponseEntity
                     .badRequest()
-                    .body(Map.of("error", "Payload cannot be empty"));
+                    .body(Map.of("error", "Payload required"));
         }
 
-        // EMAIL VALIDATION
-        if (request.getTaskType().equals("email_send")) {
-            if (!request.getPayload().containsKey("to") ||
-                    !request.getPayload().containsKey("subject") ||
-                    !request.getPayload().containsKey("body")) {
-
-                return ResponseEntity
-                        .badRequest()
-                        .body(Map.of("error", "Missing fields: to, subject, body"));
-            }
-        }
-
-        // CSV VALIDATION
-        if (request.getTaskType().equals("csv_process")) {
-
-            if (!request.getPayload().containsKey("fileName")) {
-                return ResponseEntity
-                        .badRequest()
-                        .body(Map.of("error", "Missing field: fileName"));
-            }
-        }
-
-        // REPORT VALIDATION
-        if (request.getTaskType().equals("report_generation")) {
-
-            if (!request.getPayload().containsKey("reportType")) {
-                return ResponseEntity
-                        .badRequest()
-                        .body(Map.of("error", "Missing field: reportType"));
-            }
-        }
+        // ❌ REMOVE ALL DEEP VALIDATIONS (email, csv, report)
+        // Let worker handle failures
 
         UUID id = service.createTask(
                 request.getTaskType(),
-                request.getPayload());
+                request.getPayload()
+        );
 
         return ResponseEntity.ok(Map.of("task_id", id));
     }
