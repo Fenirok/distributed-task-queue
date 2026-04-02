@@ -1,4 +1,4 @@
-# 🚀 Distributed Task Queue System
+# Distributed Task Queue System
 
 ![Java](https://img.shields.io/badge/Java-17-orange)
 ![Spring Boot](https://img.shields.io/badge/SpringBoot-3.x-brightgreen)
@@ -9,7 +9,7 @@
 
 ---
 
-## 📌 Overview
+## Overview
 
 A **Distributed Task Queue System** built using **Spring Boot**, designed to handle asynchronous job execution with background workers.
 
@@ -28,7 +28,7 @@ It enables:
 
 ---
 
-## 🎯 Phase 1 Scope
+## Phase 1 Scope
 
 Aligned with official requirements :
 
@@ -40,7 +40,7 @@ Aligned with official requirements :
 
 ---
 
-## 🧠 System Architecture
+## System Architecture
 
 ```mermaid
 flowchart TD
@@ -59,7 +59,7 @@ flowchart TD
 
 ---
 
-## ⚙️ Tech Stack
+## Tech Stack
 
 | Layer         | Technology   |
 | ------------- | ------------ |
@@ -71,7 +71,7 @@ flowchart TD
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ### 🔹 Main Source (`src/main/java`)
 
@@ -132,11 +132,11 @@ com.aditya.distributed_task_queue
 └── DistributedTaskQueueApplicationTests.java
 ```
 
-👉 This reflects **layered test coverage (very good practice)**
+This reflects **layered test coverage (very good practice)**
 
 ---
 
-## 🔁 Task Lifecycle
+## Task Lifecycle
 
 ```mermaid
 stateDiagram-v2
@@ -150,19 +150,19 @@ Defined in `TaskStatus`
 
 ---
 
-## ⚡ Features Implemented
+## Features Implemented
 
-### ✅ Task Submission API
+### Task Submission API
 
 * `POST /tasks`
 * Non-blocking
 * Returns `task_id`
 
-✔ Implemented in `TaskController` 
+Implemented in `TaskController` 
 
 ---
 
-### ✅ Strong Input Validation
+### Strong Input Validation
 
 * Task type validation
 * Payload validation
@@ -176,7 +176,7 @@ Examples:
 
 ---
 
-### ✅ Background Worker
+### Background Worker
 
 * Runs continuously in a separate thread
 * Polls database every 2 seconds
@@ -186,30 +186,30 @@ Examples:
 
 ---
 
-### ✅ Pluggable Task Execution (Strategy Pattern)
+### Pluggable Task Execution (Strategy Pattern)
 
 * `TaskHandler` interface 
 * Factory-based handler resolution 
 
 Supported handlers:
 
-* 📧 Email Task
-* 📄 CSV Processing
-* 📊 Report Generation
+* Email Task
+* CSV Processing
+* Report Generation
 
 ---
 
-### ✅ Task Status Tracking
+### Task Status Tracking
 
 * Fetch by ID
 * Fetch all tasks
 * Filter by status
 
-✔ Implemented in `TaskService` 
+Implemented in `TaskService` 
 
 ---
 
-### ✅ Execution Metadata
+### Execution Metadata
 
 Each task tracks:
 
@@ -219,11 +219,11 @@ Each task tracks:
 * result
 * error
 
-✔ Defined in `Task` entity 
+Defined in `Task` entity 
 
 ---
 
-### ✅ Error Handling
+### Error Handling
 
 * Invalid input → HTTP 400
 * Execution failure → FAILED state
@@ -231,7 +231,7 @@ Each task tracks:
 
 ---
 
-### ✅ Execution Time Tracking
+### Execution Time Tracking
 
 ```text
 Success (Execution Time: X ms)
@@ -239,7 +239,7 @@ Success (Execution Time: X ms)
 
 ---
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### ➤ Create Task
 
@@ -284,7 +284,7 @@ GET /tasks?status=COMPLETED
 
 ---
 
-## 🖥️ UI Flow
+## UI Flow
 
 ```mermaid
 sequenceDiagram
@@ -303,20 +303,20 @@ sequenceDiagram
 
 ---
 
-## 🧪 Testing
+## Testing
 
-✔ Unit tests implemented for:
+Unit tests implemented for:
 
 * Controller layer
 * Service layer
 * Worker logic
 * Task handlers
 
-👉 Structured test hierarchy improves maintainability and reliability.
+Structured test hierarchy improves maintainability and reliability.
 
 ---
 
-## ⚠️ Limitations (Phase 1)
+## Limitations (Phase 1)
 
 * No priority queue
 * No retry mechanism
@@ -326,16 +326,16 @@ sequenceDiagram
 
 ---
 
-## 🚧 Roadmap
+## Roadmap
 
-### 🔹 Phase 2
+### Phase 2
 
 * Priority Queue
 * Retry Logic
 * Task Dependencies
 * Scheduled Tasks
 
-### 🔹 Phase 3
+### Phase 3
 
 * Horizontal Scaling
 * Dead Letter Queue (DLQ)
@@ -344,7 +344,7 @@ sequenceDiagram
 
 ---
 
-## 💡 Design Highlights
+## Design Highlights
 
 * Clean layered architecture
 * Strategy pattern for extensibility
@@ -355,7 +355,7 @@ sequenceDiagram
 
 ---
 
-## ▶️ Running the Project
+## Running the Project
 
 ```bash
 git clone https://github.com/your-username/distributed-task-queue.git
@@ -365,13 +365,13 @@ cd distributed-task-queue
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Aditya Halder**
 
 ---
 
-## ⭐ Final Note
+## Final Note
 
 This Phase 1 system delivers:
 
@@ -380,12 +380,5 @@ This Phase 1 system delivers:
 ✔ Strong validation + reliability
 ✔ Structured test coverage
 
-👉 Ready for **Phase 2 enhancements and scaling**
+Ready for **Phase 2 enhancements and scaling**
 
----
-
-If you want next upgrade:
-
-* 🔥 Add **Swagger UI docs (huge boost for reviewers)**
-* 🔥 Add **Docker setup (very impressive)**
-* 🔥 Fix your **UI progress bar issue (critical for demo)**
