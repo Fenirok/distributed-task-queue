@@ -1,3 +1,12 @@
+/**
+ * Handles email sending task.
+ *
+ * Simulates sending email by:
+ * - Validating payload
+ * - Printing logs
+ * - Adding delay to mimic real-world processing
+ */
+
 package com.aditya.distributed_task_queue.handler.implementation;
 
 import com.aditya.distributed_task_queue.handler.TaskHandler;

@@ -1,3 +1,12 @@
+/**
+ * REST Controller for managing task operations.
+ *
+ * Responsibilities:
+ * - Accept task creation requests
+ * - Validate input payloads
+ * - Provide APIs to fetch tasks
+ */
+
 package com.aditya.distributed_task_queue.controller;
 
 import com.aditya.distributed_task_queue.dto.TaskRequest;
@@ -22,10 +31,22 @@ public class TaskController {
         this.service = service;
     }
 
+    /**
+     * Creates a new task.
+     *
+     * Validates:
+     * - Task type
+     * - Payload presence
+     * - Required fields per task type
+     *
+     * @param request Task request containing type and payload
+     * @return task_id if successful, error otherwise
+     */
+
     @PostMapping
     public ResponseEntity<?> create(@RequestBody TaskRequest request) {
 
-        // ✅ ONLY minimal validation (DO NOT BLOCK EXECUTION)
+        // Validate task type to prevent unsupported execution
 
         if (request.getTaskType() == null || request.getTaskType().isBlank()) {
             return ResponseEntity
@@ -33,6 +54,7 @@ public class TaskController {
                     .body(Map.of("error", "Task type required"));
         }
 
+        // Validate payload existence to prevent null pointer exceptions in workers
         if (request.getPayload() == null) {
             return ResponseEntity
                     .badRequest()
