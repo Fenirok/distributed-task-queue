@@ -1,6 +1,12 @@
-# Distributed Task Queue System
+#  Distributed Task Queue System
 
-## Overview
+![Java](https://img.shields.io/badge/Java-17-orange)
+![Spring Boot](https://img.shields.io/badge/SpringBoot-3.x-brightgreen)
+![Phase](https://img.shields.io/badge/Phase-1_Completed-blue)
+
+---
+
+##  Overview
 
 A **Distributed Task Queue System** built using **Spring Boot**, designed to handle asynchronous job execution with background workers.
 
@@ -19,9 +25,9 @@ It enables:
 
 ---
 
-## Phase 1 Scope
+##  Phase 1 Scope
 
-Aligned with official requirements :
+Aligned with requirements:
 
 * ✔ Task submission API
 * ✔ Background worker
@@ -31,7 +37,7 @@ Aligned with official requirements :
 
 ---
 
-## System Architecture
+##  System Architecture
 
 ```mermaid
 flowchart TD
@@ -50,19 +56,19 @@ flowchart TD
 
 ---
 
-## Tech Stack
+## ⚙️ Tech Stack
 
-| Layer         | Technology   |
-| ------------- | ------------ |
-| Backend       | Spring Boot  |
-| Language      | Java         |
-| Database      | JPA (SQL DB) |
-| Serialization | Jackson      |
-| Testing       | JUnit        |
+| Layer         | Technology        |
+| ------------- | ----------------- |
+| Backend       | Spring Boot       |
+| Language      | Java              |
+| Database      | PostgreSQL (Neon) |
+| Serialization | Jackson           |
+| Testing       | JUnit             |
 
 ---
 
-## Project Structure
+##  Project Structure
 
 ### 🔹 Main Source (`src/main/java`)
 
@@ -70,32 +76,12 @@ flowchart TD
 com.aditya.distributed_task_queue
 │
 ├── controller/
-│   └── TaskController.java
-│
 ├── dto/
-│   └── TaskRequest.java
-│
 ├── handler/
-│   ├── TaskHandler.java
-│   ├── TaskHandlerFactory.java
-│   └── implementation/
-│       ├── CsvTaskHandler.java
-│       ├── EmailTaskHandler.java
-│       └── ReportTaskHandler.java
-│
 ├── model/
-│   ├── Task.java
-│   └── TaskStatus.java
-│
 ├── repository/
-│   └── TaskRepository.java
-│
 ├── service/
-│   └── TaskService.java
-│
 ├── worker/
-│   └── TaskWorker.java
-│
 └── DistributedTaskQueueApplication.java
 ```
 
@@ -107,29 +93,67 @@ com.aditya.distributed_task_queue
 com.aditya.distributed_task_queue
 │
 ├── controller/
-│   └── TaskControllerTest.java
-│
 ├── handler/
-│   ├── CsvTaskHandlerTest.java
-│   ├── EmailTaskHandlerTest.java
-│   └── ReportTaskHandlerTest.java
-│
 ├── service/
-│   └── TaskServiceTest.java
-│
 ├── worker/
-│   └── TaskWorkerTest.java
-│
 └── DistributedTaskQueueApplicationTests.java
 ```
 
 ---
 
-# Database Design
+##  Setup & Running Instructions
 
-## Current Schema (Phase 1)
+### Prerequisites
 
-The system uses a **database-backed queue design**, where tasks are stored and processed asynchronously by workers.
+* Java 17+
+* Maven
+* PostgreSQL / Neon DB
+
+---
+
+### Database Configuration
+
+Update `application.properties`:
+
+```properties
+spring.datasource.url=your-neon-connection-url
+spring.datasource.username=your-username
+spring.datasource.password=your-password
+
+spring.jpa.hibernate.ddl-auto=update
+```
+
+---
+
+### Run Application
+
+```bash
+./mvnw spring-boot:run
+```
+
+Application runs at:
+
+```
+http://localhost:8080
+```
+
+---
+
+## Database Design & Migration
+
+### Database
+
+This project uses **Neon (serverless PostgreSQL)**.
+
+---
+
+### Schema File
+
+```
+sql/schema.sql
+```
+
+---
 
 ### Table: `tasks`
 
@@ -149,73 +173,9 @@ CREATE TABLE tasks (
 
 ---
 
-### Column Breakdown
+### Current Strategy
 
-| Column         | Type        | Description                                                  |
-| -------------- | ----------- | ------------------------------------------------------------ |
-| `task_id`      | UUID        | Unique identifier for each task                              |
-| `task_type`    | VARCHAR(50) | Task type (`email_send`, `csv_process`, `report_generation`) |
-| `payload`      | TEXT        | JSON payload stored as string                                |
-| `status`       | VARCHAR(20) | Current state (`PENDING`, `RUNNING`, `COMPLETED`, `FAILED`)  |
-| `result`       | TEXT        | Execution result                                             |
-| `error`        | TEXT        | Error message if task fails                                  |
-| `created_at`   | TIMESTAMP   | Task creation time                                           |
-| `started_at`   | TIMESTAMP   | Execution start time                                         |
-| `completed_at` | TIMESTAMP   | Execution end time                                           |
-
----
-
-### Lifecycle Mapping
-
-```text
-PENDING → RUNNING → COMPLETED / FAILED
-```
-
----
-
-## Code Documentation
-
-The codebase includes structured inline documentation:
-
-- Class-level comments for architecture understanding  
-- Method-level comments for business logic  
-- Inline comments for critical operations  
-
-Key components documented:
-- TaskWorker (background processing)
-- TaskController (API + validation)
-- TaskService (business logic)
-- TaskHandlers (execution logic)
-
----
-
-## 🗄️ Database Schema & Migration
-
-### 📌 Database
-
-This project uses **Neon (serverless PostgreSQL)** for persistence.
-
----
-
-### 📂 Schema File
-
-```bash
-sql/schema.sql
-```
-
----
-
-### ▶️ Apply Schema (Optional)
-
-```bash
-psql "your-neon-connection-string" -f sql/schema.sql
-```
-
----
-
-### ⚙️ Current Strategy
-
-* Using JPA for automatic schema generation:
+* Using JPA auto schema generation:
 
 ```properties
 spring.jpa.hibernate.ddl-auto=update
@@ -223,119 +183,14 @@ spring.jpa.hibernate.ddl-auto=update
 
 ---
 
-### 🚀 Future Migration Plan
+### Future Migration Plan
 
-* Flyway or Liquibase for version-controlled migrations
-* Separate tables for:
+* Flyway / Liquibase
+* Additional tables:
 
   * task_results
   * task_dependencies
   * dead_letter_queue
-
----
-
-### Design Decisions
-
-#### 1. Database as Queue
-
-* Tasks are stored in DB and polled by worker
-* Simpler alternative to message brokers (Phase 1)
-
----
-
-#### 2. Flexible Payload Storage
-
-* Payload stored as JSON (TEXT)
-* Supports multiple task types without schema changes
-
----
-
-#### 3. Execution Tracking
-
-* Timestamps enable:
-
-  * Execution time calculation
-  * Debugging
-  * Monitoring
-
----
-
-#### 4. Observability
-
-* `result` → success output
-* `error` → failure reason
-
----
-
-## Future Schema (Phase 2 & 3)
-
-To scale the system into a **production-grade distributed architecture**, the following extensions are planned:
-
----
-
-### 🔹 Task Results Table
-
-```sql
-CREATE TABLE task_results (
-    task_id UUID PRIMARY KEY,
-    result TEXT,
-    error_message TEXT,
-    execution_time BIGINT
-);
-```
-
----
-
-### 🔹 Task Dependencies (Chaining)
-
-```sql
-CREATE TABLE task_dependencies (
-    id SERIAL PRIMARY KEY,
-    parent_task_id UUID,
-    child_task_id UUID
-);
-```
-
-Supports workflows like:
-
-```text
-Task A → Task B → Task C
-```
-
----
-
-### 🔹 Extended Task Fields
-
-```sql
-ALTER TABLE tasks ADD COLUMN priority INT DEFAULT 0;
-ALTER TABLE tasks ADD COLUMN retry_count INT DEFAULT 0;
-ALTER TABLE tasks ADD COLUMN max_retries INT DEFAULT 3;
-ALTER TABLE tasks ADD COLUMN scheduled_at TIMESTAMP;
-```
-
----
-
-### 🔹 Dead Letter Queue (DLQ)
-
-```sql
-CREATE TABLE dead_letter_queue (
-    id SERIAL PRIMARY KEY,
-    task_id UUID,
-    error TEXT,
-    failed_at TIMESTAMP
-);
-```
-
----
-
-## 📈 Evolution Strategy
-
-| Phase   | Storage Strategy                    |
-| ------- | ----------------------------------- |
-| Phase 1 | DB-backed queue                     |
-| Phase 2 | Priority + Retry + Scheduling       |
-| Phase 3 | Kafka / Redis + Distributed Workers |
-
 
 ---
 
@@ -349,126 +204,32 @@ stateDiagram-v2
     RUNNING --> FAILED
 ```
 
-Defined in `TaskStatus` 
-
 ---
 
-📡 API Documentation
+## API Documentation
 
-A Postman collection is included for testing all APIs.
+A Postman collection is included.
 
-📂 Location:
+Location:
 
+```
 postman/task-queue.postman_collection.json
-🔹 Included APIs
-Create Task
-Get Task by ID
-Get All Tasks
-Filter Tasks by Status
-▶️ How to Use
-Open Postman
-Click Import
-Select the JSON file
-Run requests
-
----
-
-## Features Implemented
-
-### Task Submission API
-
-* `POST /tasks`
-* Non-blocking
-* Returns `task_id`
-
-Implemented in `TaskController` 
-
----
-
-### Strong Input Validation
-
-* Task type validation
-* Payload validation
-* Task-specific schema checks
-
-Examples:
-
-* Email → `to`, `subject`, `body`
-* CSV → `fileName`
-* Report → `reportType`
-
----
-
-### Background Worker
-
-* Runs continuously in a separate thread
-* Polls database every 2 seconds
-* Processes PENDING tasks
-
-✔ Implemented in `TaskWorker` 
-
----
-
-### Pluggable Task Execution (Strategy Pattern)
-
-* `TaskHandler` interface 
-* Factory-based handler resolution 
-
-Supported handlers:
-
-* Email Task
-* CSV Processing
-* Report Generation
-
----
-
-### Task Status Tracking
-
-* Fetch by ID
-* Fetch all tasks
-* Filter by status
-
-Implemented in `TaskService` 
-
----
-
-### Execution Metadata
-
-Each task tracks:
-
-* createdAt
-* startedAt
-* completedAt
-* result
-* error
-
-Defined in `Task` entity 
-
----
-
-### Error Handling
-
-* Invalid input → HTTP 400
-* Execution failure → FAILED state
-* Error stored in DB
-
----
-
-### Execution Time Tracking
-
-```text
-Success (Execution Time: X ms)
 ```
 
 ---
 
-## API Endpoints
+### 🔹 Endpoints
 
-### ➤ Create Task
+| Method | Endpoint         | Description |
+| ------ | ---------------- | ----------- |
+| POST   | `/tasks`         | Create task |
+| GET    | `/tasks/{id}`    | Get task    |
+| GET    | `/tasks`         | Get all     |
+| GET    | `/tasks?status=` | Filter      |
 
-```http
-POST /tasks
-```
+---
+
+### Example Request
 
 ```json
 {
@@ -483,27 +244,23 @@ POST /tasks
 
 ---
 
-### ➤ Get Task
+### How to Use
 
-```http
-GET /tasks/{id}
-```
-
----
-
-### ➤ Get All Tasks
-
-```http
-GET /tasks
-```
+1. Open Postman
+2. Import collection
+3. Run requests
 
 ---
 
-### ➤ Filter Tasks
+## Features Implemented
 
-```http
-GET /tasks?status=COMPLETED
-```
+* Task submission API (non-blocking)
+* Background worker (polling)
+* Task lifecycle tracking
+* Strong validation
+* Strategy-based handlers
+* Execution time tracking
+* Error handling
 
 ---
 
@@ -511,41 +268,41 @@ GET /tasks?status=COMPLETED
 
 ```mermaid
 sequenceDiagram
-    participant UI
-    participant API
-    participant DB
-    participant Worker
-
     UI->>API: POST /tasks
-    API->>DB: Save (PENDING)
+    API->>DB: Save PENDING
     Worker->>DB: Fetch PENDING
     Worker->>Worker: Execute
     Worker->>DB: Update status
-    UI->>API: Poll /tasks
+    UI->>API: Poll status
 ```
 
 ---
 
 ## Testing
 
-Unit tests implemented for:
+### Run Tests
 
-* Controller layer
-* Service layer
-* Worker logic
-* Task handlers
-
-Structured test hierarchy improves maintainability and reliability.
+```bash
+./mvnw test
+```
 
 ---
 
-## Limitations (Phase 1)
+### ✔ Coverage Includes
+
+* Controller
+* Service
+* Worker
+* Handlers
+
+---
+
+##  Limitations
 
 * No priority queue
 * No retry mechanism
 * No scheduling
 * No distributed workers
-* DB polling (not event-driven)
 
 ---
 
@@ -560,25 +317,29 @@ Structured test hierarchy improves maintainability and reliability.
 
 ### Phase 3
 
-* Horizontal Scaling
-* Dead Letter Queue (DLQ)
-* Monitoring Dashboard
-* Webhooks
+* Kafka / Redis integration
+* Horizontal scaling
+* Dead Letter Queue
+* Monitoring dashboard
 
 ---
 
-## Design Highlights
+## Code Documentation
 
-* Clean layered architecture
-* Strategy pattern for extensibility
-* Strong validation
-* Database-backed queue
-* Fault-tolerant worker design
-* Testable modular components
+* Class-level comments
+* Method-level documentation
+* Inline explanations for critical logic
+
+Key components documented:
+
+* TaskWorker
+* TaskController
+* TaskService
+* TaskHandlers
 
 ---
 
-## Running the Project
+## Run the Project
 
 ```bash
 git clone https://github.com/your-username/distributed-task-queue.git
@@ -598,10 +359,9 @@ cd distributed-task-queue
 
 This Phase 1 system delivers:
 
-✔ End-to-end async processing
-✔ Clean, extensible architecture
-✔ Strong validation + reliability
-✔ Structured test coverage
+✔ Async task execution
+✔ Clean architecture
+✔ Strong validation
+✔ Structured testing
 
-Ready for **Phase 2 enhancements and scaling**
-
+Ready for **Phase 2 scaling and production evolution**
