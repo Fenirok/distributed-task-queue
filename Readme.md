@@ -132,7 +132,158 @@ com.aditya.distributed_task_queue
 └── DistributedTaskQueueApplicationTests.java
 ```
 
-This reflects **layered test coverage (very good practice)**
+---
+
+# Database Design
+
+## Current Schema (Phase 1)
+
+The system uses a **database-backed queue design**, where tasks are stored and processed asynchronously by workers.
+
+### Table: `tasks`
+
+```sql
+CREATE TABLE tasks (
+    task_id UUID PRIMARY KEY,
+    task_type VARCHAR(50) NOT NULL,
+    payload TEXT,
+    status VARCHAR(20) NOT NULL,
+    result TEXT,
+    error TEXT,
+    created_at TIMESTAMP NOT NULL,
+    started_at TIMESTAMP,
+    completed_at TIMESTAMP
+);
+```
+
+---
+
+### Column Breakdown
+
+| Column         | Type        | Description                                                  |
+| -------------- | ----------- | ------------------------------------------------------------ |
+| `task_id`      | UUID        | Unique identifier for each task                              |
+| `task_type`    | VARCHAR(50) | Task type (`email_send`, `csv_process`, `report_generation`) |
+| `payload`      | TEXT        | JSON payload stored as string                                |
+| `status`       | VARCHAR(20) | Current state (`PENDING`, `RUNNING`, `COMPLETED`, `FAILED`)  |
+| `result`       | TEXT        | Execution result                                             |
+| `error`        | TEXT        | Error message if task fails                                  |
+| `created_at`   | TIMESTAMP   | Task creation time                                           |
+| `started_at`   | TIMESTAMP   | Execution start time                                         |
+| `completed_at` | TIMESTAMP   | Execution end time                                           |
+
+---
+
+### Lifecycle Mapping
+
+```text
+PENDING → RUNNING → COMPLETED / FAILED
+```
+
+---
+
+### Design Decisions
+
+#### 1. Database as Queue
+
+* Tasks are stored in DB and polled by worker
+* Simpler alternative to message brokers (Phase 1)
+
+---
+
+#### 2. Flexible Payload Storage
+
+* Payload stored as JSON (TEXT)
+* Supports multiple task types without schema changes
+
+---
+
+#### 3. Execution Tracking
+
+* Timestamps enable:
+
+  * Execution time calculation
+  * Debugging
+  * Monitoring
+
+---
+
+#### 4. Observability
+
+* `result` → success output
+* `error` → failure reason
+
+---
+
+## Future Schema (Phase 2 & 3)
+
+To scale the system into a **production-grade distributed architecture**, the following extensions are planned:
+
+---
+
+### 🔹 Task Results Table
+
+```sql
+CREATE TABLE task_results (
+    task_id UUID PRIMARY KEY,
+    result TEXT,
+    error_message TEXT,
+    execution_time BIGINT
+);
+```
+
+---
+
+### 🔹 Task Dependencies (Chaining)
+
+```sql
+CREATE TABLE task_dependencies (
+    id SERIAL PRIMARY KEY,
+    parent_task_id UUID,
+    child_task_id UUID
+);
+```
+
+Supports workflows like:
+
+```text
+Task A → Task B → Task C
+```
+
+---
+
+### 🔹 Extended Task Fields
+
+```sql
+ALTER TABLE tasks ADD COLUMN priority INT DEFAULT 0;
+ALTER TABLE tasks ADD COLUMN retry_count INT DEFAULT 0;
+ALTER TABLE tasks ADD COLUMN max_retries INT DEFAULT 3;
+ALTER TABLE tasks ADD COLUMN scheduled_at TIMESTAMP;
+```
+
+---
+
+### 🔹 Dead Letter Queue (DLQ)
+
+```sql
+CREATE TABLE dead_letter_queue (
+    id SERIAL PRIMARY KEY,
+    task_id UUID,
+    error TEXT,
+    failed_at TIMESTAMP
+);
+```
+
+---
+
+## 📈 Evolution Strategy
+
+| Phase   | Storage Strategy                    |
+| ------- | ----------------------------------- |
+| Phase 1 | DB-backed queue                     |
+| Phase 2 | Priority + Retry + Scheduling       |
+| Phase 3 | Kafka / Redis + Distributed Workers |
+
 
 ---
 
