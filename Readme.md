@@ -1,14 +1,5 @@
 # Distributed Task Queue System
 
-![Java](https://img.shields.io/badge/Java-17-orange)
-![Spring Boot](https://img.shields.io/badge/SpringBoot-3.x-brightgreen)
-![Build](https://img.shields.io/badge/Build-Passing-success)
-![Tests](https://img.shields.io/badge/Tests-Structured-blue)
-![Status](https://img.shields.io/badge/Phase-1_Completed-blueviolet)
-![Architecture](https://img.shields.io/badge/Architecture-Clean%20%7C%20Extensible-purple)
-
----
-
 ## Overview
 
 A **Distributed Task Queue System** built using **Spring Boot**, designed to handle asynchronous job execution with background workers.
