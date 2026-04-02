@@ -173,6 +173,67 @@ PENDING → RUNNING → COMPLETED / FAILED
 
 ---
 
+## Code Documentation
+
+The codebase includes structured inline documentation:
+
+- Class-level comments for architecture understanding  
+- Method-level comments for business logic  
+- Inline comments for critical operations  
+
+Key components documented:
+- TaskWorker (background processing)
+- TaskController (API + validation)
+- TaskService (business logic)
+- TaskHandlers (execution logic)
+
+---
+
+## 🗄️ Database Schema & Migration
+
+### 📌 Database
+
+This project uses **Neon (serverless PostgreSQL)** for persistence.
+
+---
+
+### 📂 Schema File
+
+```bash
+sql/schema.sql
+```
+
+---
+
+### ▶️ Apply Schema (Optional)
+
+```bash
+psql "your-neon-connection-string" -f sql/schema.sql
+```
+
+---
+
+### ⚙️ Current Strategy
+
+* Using JPA for automatic schema generation:
+
+```properties
+spring.jpa.hibernate.ddl-auto=update
+```
+
+---
+
+### 🚀 Future Migration Plan
+
+* Flyway or Liquibase for version-controlled migrations
+* Separate tables for:
+
+  * task_results
+  * task_dependencies
+  * dead_letter_queue
+
+---
+
 ### Design Decisions
 
 #### 1. Database as Queue
@@ -289,6 +350,26 @@ stateDiagram-v2
 ```
 
 Defined in `TaskStatus` 
+
+---
+
+📡 API Documentation
+
+A Postman collection is included for testing all APIs.
+
+📂 Location:
+
+postman/task-queue.postman_collection.json
+🔹 Included APIs
+Create Task
+Get Task by ID
+Get All Tasks
+Filter Tasks by Status
+▶️ How to Use
+Open Postman
+Click Import
+Select the JSON file
+Run requests
 
 ---
 
